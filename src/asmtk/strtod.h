@@ -11,7 +11,7 @@
 // [Dependencies]
 #include "./globals.h"
 
-#if ASMJIT_OS_WINDOWS
+#if defined(_WIN32)
   #define ASMTK_STRTOD_MSLOCALE
   #include <locale.h>
   #include <stdlib.h>
@@ -19,8 +19,13 @@
   #define ASMTK_STRTOD_XLOCALE
   #include <locale.h>
   #include <stdlib.h>
-  #if ASMJIT_OS_BSD || ASMJIT_OS_MAC
-    // xlocale.h is not available on Linux anymore, it uses <locale.h>.
+  // xlocale.h is not available on Linux anymore, it uses <locale.h>.
+  #if defined(__APPLE__    ) || \
+      defined(__bsdi__     ) || \
+      defined(__DragonFly__) || \
+      defined(__FreeBSD__  ) || \
+      defined(__NetBSD__   ) || \
+      defined(__OpenBSD__  )
     #include <xlocale.h>
   #endif
 #endif
