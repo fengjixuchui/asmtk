@@ -571,9 +571,9 @@ static const TestEntry testEntries[] = {
 
   // 64-bit miscellaneous instructions.
   X64_PASS(0x0000000000000000, "\x48\xB8\x90\x78\x56\x34\x12\x00\x00\x00"         , "MOV RAX, 0x1234567890"),
-//X64_PASS(0x0000000000000000, "\x48\xC7\xC0\x00\x00\x00\x00"                     , "MOV RAX, 0"),
+  X64_PASS(0x0000000000000000, "\x48\xC7\xC0\x00\x00\x00\x00"                     , "MOV RAX, 0"),
   X64_PASS(0x0000000000000000, "\x48\xB8\x00\x00\x00\x00\x01\x00\x00\x00"         , "MOV RAX, 0x0000100000000"),
-//X64_PASS(0x0000000000000000, "\x48\xC7\xC0\x8F\xFA\xFF\x00"                     , "MOV RAX, 0x0000FFFA8F"),
+  X64_PASS(0x0000000000000000, "\x48\xC7\xC0\x8F\xFA\xFF\x00"                     , "MOV RAX, 0x0000FFFA8F"),
   X64_PASS(0x0000000000000000, "\x48\xB8\x90\x78\x56\x34\x12\x00\x00\x00"         , "MOVABS RAX, 0x00001234567890"),
   X64_PASS(0x0000000000000000, "\x48\xB8\xFE\xFF\xFF\xFF\xFF\xFF\xFF\xFF"         , "MOVABS RAX, 0x0000FFFFFFFFFFFFFFFE"),
   X64_PASS(0x0000000000000000, "\x49\xB8\xF8\xFF\xFF\xFF\x01\x00\x00\x00"         , "movabs r8,0x1fffffff8"),
@@ -660,6 +660,11 @@ static const TestEntry testEntries[] = {
   X86_PASS(0x0000000000000000, "\xF3\xAD"                                         , "rep   lodsd eax, dword ptr [esi]"),
   X86_PASS(0x0000000000000000, "\xF3\xAE"                                         , "repe  scasb al , byte  ptr es:[edi]"),
   X86_PASS(0x0000000000000000, "\xF3\xAF"                                         , "repe  scasd eax, dword ptr es:[edi]"),
+
+  // 64-bit instructions that use extended low-byte registers.
+  X64_PASS(0x0000000000000000, "\x40\x86\x34\x24"                                 , "xchg [rsp], sil"),
+  X64_PASS(0x0000000000000000, "\x40\x86\x3C\x24"                                 , "xchg [rsp], dil"),
+
 
   // 32-bit malformed input - should cause either parsing or validation error.
   X86_FAIL(0x0000000000001000, "short jmp 0x2000"),
