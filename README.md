@@ -102,7 +102,9 @@ Support
 
 Please consider a donation if you use the project and would like to keep it active in the future.
 
-  * [Donate by PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=QDRM6SRNG7378&lc=EN;&item_name=asmtk&currency_code=EUR)
+  * BTC: 14dEp5h8jYSxgXB9vcjE8eh78uweD76o7W
+  * ETH: 0xd4f0b9424cF31DF5a5359D029CF3A65c500a581E
+  * Please contact the author if you would still like to donate through a different channel or use a different crypto-currency.
 
 Authors & Maintainers
 ---------------------

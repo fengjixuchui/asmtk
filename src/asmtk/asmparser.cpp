@@ -463,10 +463,6 @@ MemOp:
           flags |= BaseMem::kSignatureMemRel;
           type = parser.nextToken(token);
         }
-        else if (addrMode.test('w', 'r', 't')) {
-          flags |= BaseMem::kSignatureMemWrt;
-          type = parser.nextToken(token);
-        }
       }
     }
 
@@ -556,9 +552,14 @@ MemOp:
         }
 
         if (!base.isNone()) {
-          if (!Support::isInt32<int64_t>(int64_t(offset)) &&
-              !Support::isUInt32<int64_t>(int64_t(offset)))
-            return DebugUtils::errored(kErrorInvalidAddress64Bit);
+          // Verify the address can be assigned to the operand.
+          if (!Support::isInt32(int64_t(offset))) {
+            if (!Support::isUInt32(int64_t(offset)))
+              return DebugUtils::errored(kErrorInvalidAddress64Bit);
+
+            if (base.as<BaseReg>().isReg(x86::Reg::kTypeGpq))
+              return DebugUtils::errored(kErrorInvalidAddress64BitZeroExtension);
+          }
 
           int32_t disp32 = int32_t(offset & 0xFFFFFFFFu);
           if (base.isLabel())

@@ -326,8 +326,14 @@ ParseHex:
   // [Symbol]
   // --------------------------------------------------------------------------
 
+  // Parse '??xxx' as used by Windows ABI for mangled C++ symbols.
+  if (c == '?' && (size_t)(end - cur) > 2 && cur[1] == '?' && CharMap[cur[2]] <= kCharUsd) {
+    m = kCharUsd;
+    cur += 2;
+  }
+
   if (m <= kCharUsd) {
-    uint32_t mSymMax = flags & kParseDashes ? kCharDsh : kCharUsd;
+    uint32_t mSymMax = (flags & kParseDashes) ? kCharDsh : kCharUsd;
 
     while (++cur != end) {
       c = cur[0];
