@@ -791,7 +791,7 @@ static bool runTests(TestStats& out, const TestOptions& options, const TestEntry
       }
     }
     else {
-      CodeBuffer& buf = code.sectionEntry(0)->buffer();
+      CodeBuffer& buf = code.sectionById(0)->buffer();
 
       if (entry.mustPass && buf.size() == entry.mcSize && memcmp(buf.data(), entry.machineCode, entry.mcSize) == 0) {
         if (!options.onlyFailures) {

@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (isCommand(input, ".print")) {
-      CodeBuffer& buffer = code.sectionEntry(0)->buffer();
+      CodeBuffer& buffer = code.sectionById(0)->buffer();
       dumpCode(buffer.data(), buffer.size());
       continue;
     }
