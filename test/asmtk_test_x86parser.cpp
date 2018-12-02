@@ -579,9 +579,6 @@ static const TestEntry testEntries[] = {
   X86_PASS(0x0000000000000000, "\xC6\x05\xBA\x55\x0F\x00\xFF"                     , "MOV BYTE PTR [0x00000000F55BA], 0x00000000FF"),
   X86_PASS(0x0000000000000000, "\x81\x38\x80\x07\x00\x00"                         , "CMP DWORD PTR [EAX], 0x00000000780"),
 
-  // TODO: These two commented fail because AsmJit optimizes the encoded asm,
-  // they were commented out to keep CI happy as we know about this.
-
   // 64-bit miscellaneous instructions.
   X64_PASS(0x0000000000000000, "\x48\xB8\x90\x78\x56\x34\x12\x00\x00\x00"         , "MOV RAX, 0x1234567890"),
   X64_PASS(0x0000000000000000, "\x48\xC7\xC0\x00\x00\x00\x00"                     , "MOV RAX, 0"),

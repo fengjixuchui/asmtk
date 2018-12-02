@@ -577,7 +577,7 @@ MemOp:
         }
 
         dst.as<x86::Mem>().setSize(memSize);
-        dst._addSignatureData(flags);
+        dst._signature |= flags;
 
         if (seg.isReg())
           dst.as<x86::Mem>().setSegment(seg.as<x86::SReg>());
