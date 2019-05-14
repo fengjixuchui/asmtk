@@ -675,6 +675,83 @@ static const TestEntry testEntries[] = {
   X64_PASS(0x0000000000000000, "\x40\x86\x34\x24"                                 , "xchg [rsp], sil"),
   X64_PASS(0x0000000000000000, "\x40\x86\x3C\x24"                                 , "xchg [rsp], dil"),
 
+  /*
+  // 32-bit instructions that use non-standard syntax.
+  X86_PASS(0x0000000000000000, "\x66\x0F\x38\xF8\x03"                             , "movdir64b [eax], [ebx]"),
+
+  // 64-bit instructions that use non-standard syntax.
+  X64_PASS(0x0000000000000000, "\x66\x0F\x38\xF8\x03"                             , "movdir64b [rax], [rbx]"),
+
+  // 32-bit instructions that use non-standard syntax (failure cases).
+  X86_FAIL(0x0000000000000000, "movdir64b [rax], [rbx]"),
+  X86_FAIL(0x0000000000000000, "movdir64b [eax + 1], [ebx]"),
+  X86_FAIL(0x0000000000000000, "movdir64b [eax + rbx], [ebx]"),
+
+  // 64-bit instructions that use non-standard syntax (failure cases).
+  X64_FAIL(0x0000000000000000, "movdir64b [rax + 1], [rbx]"),
+  X64_FAIL(0x0000000000000000, "movdir64b [rax + rbx], [rbx]"),
+
+  // 32-bit VMX instructions.
+  X86_PASS(0x0000000000000000, "\x66\x0F\x38\x80\x03"                             , "invept eax, [ebx]"),
+  X86_PASS(0x0000000000000000, "\x66\x0F\x38\x81\x03"                             , "invvpid eax, [ebx]"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xC1"                                     , "vmcall"),
+  X86_PASS(0x0000000000000000, "\x66\x0F\xC7\x32"                                 , "vmclear [edx]"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xD4"                                     , "vmfunc"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xC2"                                     , "vmlaunch"),
+  X86_PASS(0x0000000000000000, "\x0F\xC7\x33"                                     , "vmptrld [ebx]"),
+  X86_PASS(0x0000000000000000, "\x0F\xC7\x3B"                                     , "vmptrst [ebx]"),
+  X86_PASS(0x0000000000000000, "\x0F\x78\x18"                                     , "vmread [eax], ebx"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xC3"                                     , "vmresume"),
+  X86_PASS(0x0000000000000000, "\x0F\x79\x03"                                     , "vmwrite eax, [ebx]"),
+  X86_PASS(0x0000000000000000, "\xF3\x0F\xC7\x33"                                 , "vmxon [ebx]"),
+
+  // 64-bit VMX instructions.
+  X64_PASS(0x0000000000000000, "\x66\x0F\x38\x80\x03"                             , "invept rax, [rbx]"),
+  X64_PASS(0x0000000000000000, "\x66\x0F\x38\x81\x03"                             , "invvpid rax, [rbx]"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xC1"                                     , "vmcall"),
+  X64_PASS(0x0000000000000000, "\x66\x0F\xC7\x32"                                 , "vmclear [rdx]"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xD4"                                     , "vmfunc"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xC2"                                     , "vmlaunch"),
+  X64_PASS(0x0000000000000000, "\x0F\xC7\x33"                                     , "vmptrld [rbx]"),
+  X64_PASS(0x0000000000000000, "\x0F\xC7\x3B"                                     , "vmptrst [rbx]"),
+  X64_PASS(0x0000000000000000, "\x0F\x78\x18"                                     , "vmread [rax], rbx"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xC3"                                     , "vmresume"),
+  X64_PASS(0x0000000000000000, "\x0F\x79\x03"                                     , "vmwrite rax, [rbx]"),
+  X64_PASS(0x0000000000000000, "\xF3\x0F\xC7\x33"                                 , "vmxon [rbx]"),
+
+  // 32-bit LWP instructions.
+  X86_PASS(0x0000000000000000, "\x8F\xE9\x78\x12\xC2"                             , "llwpcb edx"),
+  X86_PASS(0x0000000000000000, "\x8F\xE9\x78\x12\xC9"                             , "slwpcb ecx"),
+  X86_PASS(0x0000000000000000, "\x8F\xEA\x78\x12\x03\x04\x03\x02\x01"             , "lwpins eax, [ebx], 0x01020304"),
+  X86_PASS(0x0000000000000000, "\x8F\xEA\x78\x12\x0B\x04\x03\x02\x01"             , "lwpval eax, [ebx], 0x01020304"),
+
+  // 64-bit LWP instructions.
+  X64_PASS(0x0000000000000000, "\x8F\xE9\xF8\x12\xC2"                             , "llwpcb rdx"),
+  X64_PASS(0x0000000000000000, "\x8F\xE9\xF8\x12\xC9"                             , "slwpcb rcx"),
+  X64_PASS(0x0000000000000000, "\x8F\xEA\xF8\x12\x03\x04\x03\x02\x01"             , "lwpins rax, [rbx], 0x01020304"),
+  X64_PASS(0x0000000000000000, "\x8F\xEA\xF8\x12\x0B\x04\x03\x02\x01"             , "lwpval rax, [rbx], 0x01020304"),
+
+  // 32-bit SVM|SKINIT instructions.
+  X86_PASS(0x0000000000000000, "\x0F\x01\xDD"                                     , "clgi"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xDF"                                     , "invlpga eax, ecx"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xDE"                                     , "skinit eax"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xDC"                                     , "stgi"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xDA"                                     , "vmload eax"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xD9"                                     , "vmmcall"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xD8"                                     , "vmrun eax"),
+  X86_PASS(0x0000000000000000, "\x0F\x01\xDB"                                     , "vmsave eax"),
+
+  // 64-bit SVM|SKINIT instructions.
+  X64_PASS(0x0000000000000000, "\x0F\x01\xDD"                                     , "clgi"),
+  X64_PASS(0x0000000000000000, "\x67\x0F\x01\xDF"                                 , "invlpga eax, ecx"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xDF"                                     , "invlpga rax, ecx"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xDE"                                     , "skinit eax"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xDC"                                     , "stgi"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xDA"                                     , "vmload rax"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xD9"                                     , "vmmcall"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xD8"                                     , "vmrun rax"),
+  X64_PASS(0x0000000000000000, "\x0F\x01\xDB"                                     , "vmsave rax"),
+  */
 
   // 32-bit malformed input - should cause either parsing or validation error.
   X86_FAIL(0x0000000000001000, "short jmp 0x2000"),

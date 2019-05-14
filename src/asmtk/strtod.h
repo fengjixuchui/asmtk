@@ -4,11 +4,9 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Guard]
 #ifndef _ASMTK_STRTOD_H
 #define _ASMTK_STRTOD_H
 
-// [Dependencies]
 #include "./globals.h"
 
 #if defined(_WIN32)
@@ -61,7 +59,6 @@ public:
 #endif
 };
 
-} // asmtk namespace
+} // {asmtk}
 
-// [Guard]
 #endif // _ASMTK_STRTOD_H

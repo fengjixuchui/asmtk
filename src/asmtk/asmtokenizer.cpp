@@ -4,7 +4,8 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Dependencies]
+#define ASMTK_EXPORTS
+
 #include "./asmtokenizer.h"
 
 namespace asmtk {
@@ -72,13 +73,15 @@ static const uint8_t CharMap[] = {
 // [asmtk::AsmTokenizer]
 // ============================================================================
 
-AsmTokenizer::AsmTokenizer()
+AsmTokenizer::AsmTokenizer() noexcept
   : _input(NULL),
     _end(NULL),
     _cur(NULL),
     _stodctx() {}
 
-uint32_t AsmTokenizer::next(AsmToken* token, uint32_t flags) {
+AsmTokenizer::~AsmTokenizer() noexcept {}
+
+uint32_t AsmTokenizer::next(AsmToken* token, uint32_t flags) noexcept {
   const uint8_t* cur = _cur;
   const uint8_t* end = _end;
 
@@ -386,4 +389,4 @@ End:
   return token->setData(AsmToken::kEnd, start, cur);
 }
 
-} // asmtk namespace
+} // {asmtk}

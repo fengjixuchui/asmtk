@@ -4,7 +4,8 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Dependencies]
+#define ASMTK_EXPORTS
+
 #include "./asmparser.h"
 #include "./parserutils.h"
 
@@ -1225,4 +1226,4 @@ Error AsmParser::parseCommand() noexcept {
   return DebugUtils::errored(kErrorInvalidState);
 }
 
-} // asmtk namespace
+} // {asmtk}

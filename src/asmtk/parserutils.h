@@ -4,7 +4,6 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Guard]
 #ifndef _ASMTK_PARSERUTILS_H
 #define _ASMTK_PARSERUTILS_H
 
@@ -84,8 +83,7 @@ public:
   Value _value[kNumValues];
 };
 
-} // ParserUtils
-} // asmtk namespace
+} // {ParserUtils}
+} // {asmtk}
 
-// [Guard]
 #endif // _ASMTK_PARSERUTILS_H

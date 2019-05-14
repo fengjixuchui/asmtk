@@ -1,96 +1,178 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
+
+cmake_policy(PUSH)
+cmake_policy(SET CMP0063 NEW) # Honor visibility properties.
 
 # Don't create a project if it was already created by another CMakeLists.txt.
-# This allows one library to embed another library without a project collision.
-if(NOT CMAKE_PROJECT_NAME OR "${CMAKE_PROJECT_NAME}" STREQUAL "asmtk")
+# This allows one library to embed another library without having a collision.
+if (NOT CMAKE_PROJECT_NAME OR "${CMAKE_PROJECT_NAME}" STREQUAL "asmtk")
   project(asmtk CXX)
-endif()
-
-if(NOT DEFINED ASMJIT_BUILD_EMBED)
-  set(ASMJIT_BUILD_EMBED TRUE)
 endif()
 
 # =============================================================================
 # [AsmTK - Configuration]
 # =============================================================================
 
-set(ASMTK_DIR          "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "Location of 'asmtk'")
-set(ASMJIT_DIR         "${ASMTK_DIR}/../asmjit"    CACHE PATH "Location of 'asmjit'")
+if (NOT DEFINED ASMTK_DIR)
+  set(ASMTK_DIR "${CMAKE_CURRENT_LIST_DIR}")
+endif()
 
-set(ASMTK_BUILD_EMBED  FALSE                       CACHE BOOLEAN "Embed 'asmtk' library (no targets)")
-set(ASMTK_BUILD_STATIC ${ASMTK_BUILD_EMBED}        CACHE BOOLEAN "Build 'asmtk' library as static")
-set(ASMTK_BUILD_TEST   FALSE                       CACHE BOOLEAN "Build 'asmtk_test' applications")
+if (NOT DEFINED ASMJIT_DIR)
+  set(ASMJIT_DIR "${ASMTK_DIR}/../asmjit")
+endif()
+
+if (NOT DEFINED ASMTK_BUILD_EMBED)
+  set(ASMTK_BUILD_EMBED FALSE)
+endif()
+
+if (NOT DEFINED ASMTK_BUILD_STATIC)
+  set(ASMTK_BUILD_STATIC ${ASMJIT_BUILD_EMBED})
+endif()
+
+set(ASMTK_DIR          "${ASMTK_DIR}"              CACHE PATH "Location of 'asmtk'")
+set(ASMJIT_DIR         "${ASMJIT_DIR}"             CACHE PATH "Location of 'asmjit'")
+
+set(ASMTK_BUILD_EMBED  ${ASMTK_BUILD_EMBED}        CACHE BOOL "Embed 'asmtk' library (no targets)")
+set(ASMTK_BUILD_STATIC ${ASMTK_BUILD_STATIC}       CACHE BOOL "Build 'asmtk' library as static")
+set(ASMTK_BUILD_TEST   ${ASMTK_BUILD_TEST}         CACHE BOOL "Build 'asmtk_test' applications")
 
 # =============================================================================
 # [AsmTK - Project]
 # =============================================================================
 
-include("${ASMTK_DIR}/CxxProject.cmake")
-cxx_project(asmtk)
-cxx_detect_standard(ASMTK_PRIVATE_CFLAGS)
+set(ASMTK_INCLUDE_DIRS "${ASMTK_DIR}/src")       # Include directory is the same as source dir.
+set(ASMTK_CFLAGS "")                             # Public compiler flags.
+set(ASMTK_PRIVATE_CFLAGS "")                     # Private compiler flags independent of build type.
+set(ASMTK_PRIVATE_CFLAGS_DBG "")                 # Private compiler flags used by debug builds.
+set(ASMTK_PRIVATE_CFLAGS_REL "")                 # Private compiler flags used by release builds.
+
+if (NOT ASMTK_BUILD_NO_CUSTOM_FLAGS)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" OR "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")
+    list(APPEND ASMTK_PRIVATE_CFLAGS
+      -MP                      # [+] Multi-Process Compilation.
+      -GR-                     # [-] Runtime type information.
+      -GF                      # [+] Eliminate duplicate strings.
+      -Zc:inline               # [+] Remove unreferenced COMDAT.
+      -Zc:strictStrings        # [+] Strict const qualification of string literals.
+      -Zc:threadSafeInit-      # [-] Thread-safe statics.
+      -W4)                     # [+] Warning level 4.
+
+    list(APPEND ASMTK_PRIVATE_CFLAGS_DBG
+      -GS)                     # [+] Buffer security-check.
+
+    list(APPEND ASMTK_PRIVATE_CFLAGS_REL
+      -GS-                     # [-] Buffer security-check.
+      -O2                      # [+] Favor speed over size.
+      -Oi)                     # [+] Generate intrinsic functions.
+  elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "^(GNU|Clang|AppleClang)$")
+    list(APPEND ASMTK_PRIVATE_CFLAGS -Wall -Wextra)
+    list(APPEND ASMTK_PRIVATE_CFLAGS -fno-math-errno -fno-threadsafe-statics)
+    list(APPEND ASMTK_PRIVATE_CFLAGS_REL -O2)
+  endif()
+endif()
+
+if (ASMTK_BUILD_EMBED)
+  set(ASMTK_TARGET_TYPE "EMBED")
+elseif (ASMTK_BUILD_STATIC)
+  set(ASMTK_TARGET_TYPE "STATIC")
+else()
+  set(ASMTK_TARGET_TYPE "SHARED")
+endif()
+
+if (ASMTK_BUILD_EMBED OR ASMTK_BUILD_STATIC)
+  List(APPEND ASMTK_CFLAGS         "-DASMTK_BUILD_STATIC")
+  List(APPEND ASMTK_PRIVATE_CFLAGS "-DASMTK_BUILD_STATIC")
+endif()
 
 include("${ASMJIT_DIR}/CMakeLists.txt")
-list(APPEND ASMTK_DEPS ${ASMJIT_LIBS})
 list(APPEND ASMTK_PRIVATE_CFLAGS ${ASMJIT_CFLAGS})
-
-list(REMOVE_DUPLICATES ASMTK_DEPS)
 list(REMOVE_DUPLICATES ASMTK_PRIVATE_CFLAGS)
-
-cxx_project_info(asmtk)
 
 # =============================================================================
 # [AsmTK - Source]
 # =============================================================================
 
-set(ASMTK_SRC "")
+function(asmtk_add_source out base_dir)
+  set(src_array)
+  foreach(file ${ARGN})
+    set(src_file "${ASMTK_DIR}/${base_dir}/${file}")
+    list(APPEND src_array ${src_file})
+  endforeach()
+  source_group(TREE "${ASMTK_DIR}" FILES ${src_array})
 
-cxx_add_source(asmtk ASMTK_SRC asmtk
-  asmtk.h
-  asmparser.cpp
-  asmparser.h
-  asmtokenizer.cpp
-  asmtokenizer.h
-  elfdefs.h
-  globals.h
-  parserutils.h
-  strtod.h
+  set(out_tmp ${${out}})
+  list(APPEND out_tmp ${src_array})
+  set("${out}" "${out_tmp}" PARENT_SCOPE)
+endfunction()
+
+set(ASMTK_SRC "")
+set(ASMTK_SRC_LIST
+  asmtk/asmtk.h
+  asmtk/asmparser.cpp
+  asmtk/asmparser.h
+  asmtk/asmtokenizer.cpp
+  asmtk/asmtokenizer.h
+  asmtk/elfdefs.h
+  asmtk/globals.h
+  asmtk/parserutils.h
+  asmtk/strtod.h
 )
+asmtk_add_source(ASMTK_SRC src ${ASMTK_SRC_LIST})
+
+# =============================================================================
+# [AsmTK - Summary]
+# =============================================================================
+
+message("** AsmTK Summary **")
+message("   ASMTK_DIR=${ASMTK_DIR}")
+message("   ASMTK_TARGET_TYPE=${ASMTK_TARGET_TYPE}")
+message("   ASMTK_BUILD_TEST=${ASMTK_BUILD_TEST}")
+message("   ASMTK_CFLAGS=${ASMTK_CFLAGS}")
+message("   ASMTK_PRIVATE_CFLAGS=")
+
+foreach(_flag ${ASMTK_PRIVATE_CFLAGS})
+  message("     ${_flag}")
+endforeach()
+
+foreach(_flag ${ASMTK_PRIVATE_CFLAGS_DBG})
+  message("     ${_flag} [DEBUG]")
+endforeach()
+
+foreach(_flag ${ASMTK_PRIVATE_CFLAGS_REL})
+  message("     ${_flag} [RELEASE]")
+endforeach()
 
 # =============================================================================
 # [AsmTK - Targets]
 # =============================================================================
 
-if(NOT ASMTK_BUILD_EMBED)
-  if(ASMTK_BUILD_TEST)
-    set(ASMTK_TEST_CFLAGS
-      ${ASMJIT_CFLAGS}
-      ${CXX_DEFINE}ASMJIT_BUILD_X86
-      ${CXX_DEFINE}ASMJIT_BUILD_EMBED
-      ${CXX_DEFINE}ASMTK_BUILD_EMBED)
-    cxx_detect_standard(ASMTK_TEST_CFLAGS)
+if (NOT ASMTK_BUILD_EMBED)
+  add_library(asmtk ${ASMTK_TARGET_TYPE} ${ASMTK_SRC})
+  target_compile_features(asmtk PUBLIC cxx_std_11)
+  target_compile_options(asmtk PUBLIC ${ASMTK_CFLAGS})
+  target_compile_options(asmtk PRIVATE ${ASMTK_PRIVATE_CFLAGS}
+    $<$<CONFIG:Debug>:${ASMTK_PRIVATE_CFLAGS_DBG}>
+    $<$<NOT:$<CONFIG:Debug>>:${ASMTK_PRIVATE_CFLAGS_REL}>)
+  target_link_libraries(asmtk PUBLIC AsmJit::AsmJit)
+  target_include_directories(asmtk BEFORE INTERFACE ${ASMTK_INCLUDE_DIRS})
+  set_property(TARGET asmtk PROPERTY CXX_VISIBILITY_PRESET hidden)
 
+  # Add AsmTK::AsmTK target (alias to asmtk).
+  add_library(AsmTK::AsmTK ALIAS asmtk)
+
+  if (ASMTK_BUILD_TEST AND NOT ASMJIT_BUILD_EMBED)
     set(ASMTK_SAMPLES_SRC
       asmtk_test_x86cmd
       asmtk_test_x86handler
       asmtk_test_x86parser)
 
     foreach(_target ${ASMTK_SAMPLES_SRC})
-      add_executable(${_target} ${ASMJIT_SRC} ${ASMTK_SRC} "${ASMTK_DIR}/test/${_target}.cpp")
-      target_link_libraries(${_target} ${ASMJIT_DEPS})
-      target_include_directories(${_target} BEFORE PRIVATE ${ASMJIT_INCLUDE_DIR})
-      set_target_properties(${_target} PROPERTIES LINK_FLAGS "${ASMJIT_PRIVATE_LFLAGS}")
-
-      if(CMAKE_BUILD_TYPE)
-        if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-          target_compile_options(${_target} PRIVATE ${ASMTK_TEST_CFLAGS} ${ASMTK_PRIVATE_CFLAGS} ${ASMTK_PRIVATE_CFLAGS_DBG})
-        else()
-          target_compile_options(${_target} PRIVATE ${ASMTK_TEST_CFLAGS} ${ASMTK_PRIVATE_CFLAGS} ${ASMTK_PRIVATE_CFLAGS_REL})
-        endif()
-      else()
-        target_compile_options(${_target} PRIVATE ${ASMTK_TEST_CFLAGS} ${ASMTK_PRIVATE_CFLAGS}
-          $<$<CONFIG:Debug>:${ASMTK_PRIVATE_CFLAGS_DBG}>
-          $<$<NOT:$<CONFIG:Debug>>:${ASMTK_PRIVATE_CFLAGS_REL}>)
-      endif()
+      add_executable(${_target} "${ASMTK_DIR}/test/${_target}.cpp")
+      target_link_libraries(${_target} AsmJit::AsmJit AsmTK::AsmTK)
+      target_compile_features(${_target} PUBLIC cxx_std_11)
+      set_property(TARGET ${_target} PROPERTY CXX_VISIBILITY_PRESET hidden)
     endforeach()
   endif()
 endif()
+
+cmake_policy(POP)

@@ -4,11 +4,9 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Guard]
 #ifndef _ASMTK_ASMTOKENIZER_H
 #define _ASMTK_ASMTOKENIZER_H
 
-// [Dependencies]
 #include "./globals.h"
 #include "./strtod.h"
 
@@ -18,6 +16,7 @@ namespace asmtk {
 // [asmtk::AsmToken]
 // ============================================================================
 
+//! Token.
 struct AsmToken {
   enum Type : uint32_t {
     kEnd,
@@ -42,37 +41,36 @@ struct AsmToken {
     kInvalid
   };
 
-  inline bool is(char c0) {
-    return size == 1 && data[0] == c0;
-  }
-  inline bool is(char c0, char c1) {
-    return size == 2 && data[0] == c0 && data[1] == c1;
-  }
-  inline bool is(char c0, char c1, char c2) {
-    return size == 3 && data[0] == c0 && data[1] == c1 && data[2] == c2;
-  }
-  inline bool is(char c0, char c1, char c2, char c3) {
-    return size == 4 && data[0] == c0 && data[1] == c1 && data[2] == c2 && data[3] == c3;
-  }
-  inline bool is(char c0, char c1, char c2, char c3, char c4) {
-    return size == 5 && data[0] == c0 && data[1] == c1 && data[2] == c2 && data[3] == c3 && data[4] == c4;
+  template<typename... Args>
+  inline bool _isImpl(size_t index, char c) noexcept {
+    return data[index] == c;
   }
 
-  inline void reset() {
+  template<typename... Args>
+  inline bool _isImpl(size_t index, char c, Args&&... args) noexcept {
+    return data[index] == c && _isImpl(index + 1, args...);
+  }
+
+  template<typename... Args>
+  inline bool is(Args&&... args) noexcept {
+    return size == sizeof...(args) && _isImpl(0, args...);
+  }
+
+  inline void reset() noexcept {
     type = kEnd;
     data = nullptr;
     size = 0;
     u64 = 0;
   }
 
-  inline uint32_t setData(uint32_t type, const uint8_t* data, size_t size) {
+  inline uint32_t setData(uint32_t type, const uint8_t* data, size_t size) noexcept {
     this->data = data;
     this->size = size;
     this->type = type;
     return type;
   }
 
-  inline uint32_t setData(uint32_t type, const uint8_t* data, const uint8_t* end) {
+  inline uint32_t setData(uint32_t type, const uint8_t* data, const uint8_t* end) noexcept {
     return setData(type, data, (size_t)(end - data));
   }
 
@@ -92,6 +90,7 @@ struct AsmToken {
 // [asmtk::AsmTokenizer]
 // ============================================================================
 
+//! Tokenizer.
 class AsmTokenizer {
 public:
   //! Tokenizer options.
@@ -108,11 +107,24 @@ public:
     kStateNumberSuffix    = 0x80000000u  //!< Parsed number suffix [b|o|q|h].
   };
 
-  AsmTokenizer();
-  uint32_t next(AsmToken* token, uint32_t flags = 0);
-  inline void putBack(AsmToken* token) { _cur = token->data; }
+  //! Creates a tokanizer.
+  ASMTK_API AsmTokenizer() noexcept;
+  //! Destroys the tokanizer.
+  ASMTK_API ~AsmTokenizer() noexcept;
 
-  inline void setInput(const uint8_t* input, size_t size) {
+  //! Parses a next `token` and advances.
+  ASMTK_API uint32_t next(AsmToken* token, uint32_t flags = 0) noexcept;
+
+  //! Puts a token back to the tokenizer so that `next()` would parse it again.
+  inline void putBack(AsmToken* token) noexcept {
+    _cur = token->data;
+  }
+
+  //! Sets the input of the tokenizer to `input` and `size`. The input doesn't
+  //! have to be null terminated as the tokenizer would never go beyond the
+  //! `size` specified. This means that the tokenizer can be used with string
+  //! views.
+  inline void setInput(const uint8_t* input, size_t size) noexcept {
     _input = input;
     _end = input + size;
     _cur = input;
@@ -125,7 +137,6 @@ public:
   StrToD _stodctx;
 };
 
-} // asmtk namespace
+} // {asmtk}
 
-// [Guard]
 #endif // _ASMTK_ASMTOKENIZER_H

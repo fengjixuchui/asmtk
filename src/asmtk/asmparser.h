@@ -4,11 +4,9 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Guard]
 #ifndef _ASMTK_ASMPARSER_H
 #define _ASMTK_ASMPARSER_H
 
-// [Dependencies]
 #include "./strtod.h"
 #include "./asmtokenizer.h"
 
@@ -21,10 +19,11 @@ namespace asmtk {
 //! Asm parser.
 class AsmParser {
 public:
-  typedef Error (ASMJIT_CDECL* UnknownSymbolHandler)(AsmParser* parser, asmjit::Operand* out, const char* name, size_t size);
+  typedef Error (ASMJIT_CDECL* UnknownSymbolHandler)(
+    AsmParser* parser, asmjit::Operand* out, const char* name, size_t size);
 
-  AsmParser(asmjit::BaseEmitter* emitter) noexcept;
-  ~AsmParser() noexcept;
+  ASMTK_API AsmParser(asmjit::BaseEmitter* emitter) noexcept;
+  ASMTK_API ~AsmParser() noexcept;
 
   // --------------------------------------------------------------------------
   // [Accessors]
@@ -36,7 +35,10 @@ public:
   // [Input]
   // --------------------------------------------------------------------------
 
-  inline const char* input() const noexcept { return reinterpret_cast<const char*>(_tokenizer._input); }
+  inline const char* input() const noexcept {
+    return reinterpret_cast<const char*>(_tokenizer._input);
+  }
+
   inline bool setInput(const char* input, size_t size = SIZE_MAX) noexcept {
     if (size == SIZE_MAX)
       size = strlen(input);
@@ -51,8 +53,8 @@ public:
   inline bool isEndOfInput() const noexcept { return _endOfInput; }
   inline size_t currentCommandOffset() const noexcept { return _currentCommandOffset; }
 
-  uint32_t nextToken(AsmToken* token, uint32_t flags = 0) noexcept;
-  void putTokenBack(AsmToken* token) noexcept;
+  ASMTK_API uint32_t nextToken(AsmToken* token, uint32_t flags = 0) noexcept;
+  ASMTK_API void putTokenBack(AsmToken* token) noexcept;
 
   // --------------------------------------------------------------------------
   // [UnknownSymbolHandler]
@@ -66,7 +68,7 @@ public:
     _unknownSymbolHandlerData = data;
   }
 
-  inline void resetUnknownSymbolHandler() {
+  inline void resetUnknownSymbolHandler() noexcept {
     setUnknownSymbolHandler((UnknownSymbolHandler)nullptr, nullptr);
   }
 
@@ -78,9 +80,9 @@ public:
   //! the end is reached. It returns `kErrorOk` on success (which means that all
   //! commands were parsed successfully), otherwise and error code describing
   //! the problem.
-  Error parse(const char* input, size_t size = SIZE_MAX) noexcept;
+  ASMTK_API Error parse(const char* input, size_t size = SIZE_MAX) noexcept;
 
-  Error parseCommand() noexcept;
+  ASMTK_API Error parseCommand() noexcept;
 
   // --------------------------------------------------------------------------
   // [Members]
@@ -96,7 +98,6 @@ public:
   void* _unknownSymbolHandlerData;
 };
 
-} // asmtk namespace
+} // {asmtk}
 
-// [Guard]
 #endif // _ASMTK_ASMPARSER_H

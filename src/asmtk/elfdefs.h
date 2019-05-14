@@ -4,11 +4,9 @@
 // [License]
 // Zlib - See LICENSE.md file in the package.
 
-// [Guard]
 #ifndef _ASMTK_ELFDEFS_H
 #define _ASMTK_ELFDEFS_H
 
-// [Dependencies]
 #include "./globals.h"
 
 namespace asmtk {
@@ -172,7 +170,6 @@ struct ElfSymbolData<uint64_t> {
 typedef ElfSymbolData<uint32_t> ElfSymbolData32;
 typedef ElfSymbolData<uint64_t> ElfSymbolData64;
 
-} // asmtk namespace
+} // {asmtk}
 
-// [Guard]
 #endif // _ASMTK_ELFDEFS_H
