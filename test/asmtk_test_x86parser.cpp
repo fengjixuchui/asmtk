@@ -675,7 +675,6 @@ static const TestEntry testEntries[] = {
   X64_PASS(0x0000000000000000, "\x40\x86\x34\x24"                                 , "xchg [rsp], sil"),
   X64_PASS(0x0000000000000000, "\x40\x86\x3C\x24"                                 , "xchg [rsp], dil"),
 
-  /*
   // 32-bit instructions that use non-standard syntax.
   X86_PASS(0x0000000000000000, "\x66\x0F\x38\xF8\x03"                             , "movdir64b [eax], [ebx]"),
 
@@ -751,7 +750,6 @@ static const TestEntry testEntries[] = {
   X64_PASS(0x0000000000000000, "\x0F\x01\xD9"                                     , "vmmcall"),
   X64_PASS(0x0000000000000000, "\x0F\x01\xD8"                                     , "vmrun rax"),
   X64_PASS(0x0000000000000000, "\x0F\x01\xDB"                                     , "vmsave rax"),
-  */
 
   // 32-bit malformed input - should cause either parsing or validation error.
   X86_FAIL(0x0000000000001000, "short jmp 0x2000"),

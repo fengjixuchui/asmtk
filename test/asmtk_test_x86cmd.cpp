@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
 
     if (err == kErrorOk) {
       const char* log = logger.data();
-      size_t i, size = logger.size();
+      size_t i, size = logger.dataSize();
 
       // Skip the instruction part, and keep only the comment part.
       for (i = 0; i < size; i++) {

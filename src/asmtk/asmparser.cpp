@@ -584,7 +584,6 @@ MemOp:
           dst.as<x86::Mem>().setSegment(seg.as<x86::SReg>());
 
         return kErrorOk;
-        break;
       }
       else if (type == AsmToken::kComma) {
         if (commaSeparated)

@@ -14,8 +14,16 @@
 #include <cstdlib>
 #include <cstring>
 
+// DEPRECATED: Will be removed in the future.
+#if defined(ASMTK_BUILD_STATIC)
+  #pragma message("'ASMTK_BUILD_STATIC' is deprecated, use 'ASMTK_STATIC'")
+  #if !defined(ASMTK_STATIC)
+    #define ASMTK_STATIC
+  #endif
+#endif
+
 // API (Export / Import).
-#if !defined(ASMTK_BUILD_EMBED) && !defined(ASMTK_BUILD_STATIC)
+#if !defined(ASMTK_STATIC)
   #if defined(_WIN32) && (defined(_MSC_VER) || defined(__MINGW32__))
     #if defined(ASMTK_EXPORTS)
       #define ASMTK_API __declspec(dllexport)

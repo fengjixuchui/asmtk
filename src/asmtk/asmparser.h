@@ -22,18 +22,32 @@ public:
   typedef Error (ASMJIT_CDECL* UnknownSymbolHandler)(
     AsmParser* parser, asmjit::Operand* out, const char* name, size_t size);
 
+  asmjit::BaseEmitter* _emitter;
+  AsmTokenizer _tokenizer;
+
+  size_t _currentCommandOffset;
+  bool _endOfInput;
+
+  UnknownSymbolHandler _unknownSymbolHandler;
+  void* _unknownSymbolHandlerData;
+
+  //! \name Construction & Destruction
+  //! \{
+
   ASMTK_API AsmParser(asmjit::BaseEmitter* emitter) noexcept;
   ASMTK_API ~AsmParser() noexcept;
 
-  // --------------------------------------------------------------------------
-  // [Accessors]
-  // --------------------------------------------------------------------------
+  //! \}
+
+  //! \name Accessors
+  //! \{
 
   inline asmjit::BaseEmitter* emitter() const noexcept { return _emitter; }
 
-  // --------------------------------------------------------------------------
-  // [Input]
-  // --------------------------------------------------------------------------
+  //! \}
+
+  //! \name Input Buffer
+  //! \{
 
   inline const char* input() const noexcept {
     return reinterpret_cast<const char*>(_tokenizer._input);
@@ -56,9 +70,10 @@ public:
   ASMTK_API uint32_t nextToken(AsmToken* token, uint32_t flags = 0) noexcept;
   ASMTK_API void putTokenBack(AsmToken* token) noexcept;
 
-  // --------------------------------------------------------------------------
-  // [UnknownSymbolHandler]
-  // --------------------------------------------------------------------------
+  //! \}
+
+  //! \name Unknown Symbol Handler
+  //! \{
 
   inline UnknownSymbolHandler unknownSymbolHandler() const noexcept { return _unknownSymbolHandler; }
   inline void* unknownSymbolHandlerData() const noexcept { return _unknownSymbolHandlerData; }
@@ -72,9 +87,10 @@ public:
     setUnknownSymbolHandler((UnknownSymbolHandler)nullptr, nullptr);
   }
 
-  // --------------------------------------------------------------------------
-  // [Parsing]
-  // --------------------------------------------------------------------------
+  //! \}
+
+  //! \name Parser
+  //! \{
 
   //! Universal method that setups the input and then calls `parseLine()` until
   //! the end is reached. It returns `kErrorOk` on success (which means that all
@@ -84,18 +100,7 @@ public:
 
   ASMTK_API Error parseCommand() noexcept;
 
-  // --------------------------------------------------------------------------
-  // [Members]
-  // --------------------------------------------------------------------------
-
-  asmjit::BaseEmitter* _emitter;
-  AsmTokenizer _tokenizer;
-
-  size_t _currentCommandOffset;
-  bool _endOfInput;
-
-  UnknownSymbolHandler _unknownSymbolHandler;
-  void* _unknownSymbolHandlerData;
+  //! \}
 };
 
 } // {asmtk}
